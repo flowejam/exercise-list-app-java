@@ -32,9 +32,10 @@ class ExerciseController {
   @ResponseStatus(value = HttpStatus.CREATED)
   Exercise newExercise(@RequestBody @Valid Exercise newExercise, BindingResult bindingResult) {
     if (bindingResult.hasErrors()) {
-    //TODO
+      throw new InvalidExerciseException();
+    } else {
+      return repository.save(newExercise);
     }
-    return repository.save(newExercise);
   }
 
   @GetMapping("/exercises/{id}")
@@ -45,18 +46,22 @@ class ExerciseController {
   }
 
   @PutMapping("/exercises/{id}")
-  Exercise replaceExercise(@RequestBody @Valid Exercise newExercise, @PathVariable String id) {
-    
-    return repository.findById(id)
-      .map(exercise -> {
-        exercise.setName(newExercise.getName());
-        exercise.setReps(newExercise.getReps());
-        exercise.setWeight(newExercise.getWeight());
-        exercise.setUnit(newExercise.getUnit());
-        exercise.setDate(newExercise.getDate());
-        return repository.save(exercise);
-      })
-      .orElseThrow(() -> new ExerciseNotFoundException(id));
+  Exercise replaceExercise(@RequestBody @Valid Exercise newExercise, BindingResult bindingResult, @PathVariable String id) {
+
+    if (bindingResult.hasErrors()) {
+      throw new InvalidExerciseException();
+    } else {
+      return repository.findById(id)
+        .map(exercise -> {
+          exercise.setName(newExercise.getName());
+          exercise.setReps(newExercise.getReps());
+          exercise.setWeight(newExercise.getWeight());
+          exercise.setUnit(newExercise.getUnit());
+          exercise.setDate(newExercise.getDate());
+          return repository.save(exercise);
+        })
+        .orElseThrow(() -> new ExerciseNotFoundException(id));
+    }
   }
 
   @DeleteMapping("/exercises/{id}")
